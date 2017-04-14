@@ -1,13 +1,11 @@
 package com.github.cheny1ran;
 
-import com.github.cheny1ran.constant.FinishUpgradeType;
 import com.github.cheny1ran.http.RancherRequest;
-import com.github.cheny1ran.http.RequestMethod;
-import com.github.cheny1ran.model.common.PrimaryModel;
-import org.apache.commons.lang3.Validate;
+import com.github.cheny1ran.service.ContainerService;
+import com.github.cheny1ran.service.ServiceService;
+import com.github.cheny1ran.service.StackService;
 import org.apache.log4j.Logger;
 
-import java.io.IOException;
 import java.util.Base64;
 
 /**
@@ -41,6 +39,12 @@ public class RancherAPI {
 
     private static final String SEP = "/";
 
+    public final ContainerService container = new ContainerService(this);
+
+    public final StackService stack = new StackService(this);
+
+    public final ServiceService service = new ServiceService(this);
+
     private RancherAPI(String rancherUrl, String accessKey, String secretKey, String projectId) {
         this.url = rancherUrl.endsWith(SEP) ? rancherUrl.substring(0, rancherUrl.length() - 1) : rancherUrl;
         this.accessKey = accessKey;
@@ -71,7 +75,6 @@ public class RancherAPI {
     private String generateAuthorization() {
         String userpass = accessKey + ":" + secretKey;
         String authorization = "Basic " + Base64.getEncoder().encodeToString(userpass.getBytes()).trim();
-        log.info("authorization : " + authorization);
         return authorization;
     }
 
@@ -79,27 +82,11 @@ public class RancherAPI {
         return authorization;
     }
 
-    public PrimaryModel create(PrimaryModel model) throws IOException {
-        return this.connect().request(model.getNamespace(), model.getClass(), model, RequestMethod.POST);
+    public String getUrl() {
+        return url;
     }
 
-    public PrimaryModel delete(PrimaryModel model) throws IOException {
-        Validate.notNull(model.getId());
-        String urlTail = model.getNamespace() + SEP + model.getId();
-        return this.connect().request(urlTail, model.getClass(), RequestMethod.DELETE);
+    public String getProjectId() {
+        return projectId;
     }
-
-    public PrimaryModel update(PrimaryModel model) throws IOException {
-        Validate.notNull(model.getId());
-        String urlTail = model.getNamespace() + SEP + model.getId();
-        return this.connect().request(urlTail, model.getClass(), model, RequestMethod.PUT);
-    }
-
-    public void finishUpgrade(String id, FinishUpgradeType type) throws IOException {
-        Validate.notNull(id);
-        String urlTail = SEP + type.getValue() + SEP + id + "?action=finishupgrade";
-        this.connect().request(urlTail, type.getClz(), RequestMethod.POST);
-    }
-
-
 }

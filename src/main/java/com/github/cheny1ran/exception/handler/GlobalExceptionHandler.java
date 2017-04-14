@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 
 public class GlobalExceptionHandler {
 
-
     @ExceptionHandler(RancherIOException.class)
     public void handleRancherIOException(RancherIOException e) {
 

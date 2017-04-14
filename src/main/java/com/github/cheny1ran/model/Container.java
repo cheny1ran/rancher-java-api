@@ -1,7 +1,6 @@
 package com.github.cheny1ran.model;
 
 
-import com.github.cheny1ran.model.common.PrimaryModel;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -14,12 +13,13 @@ import java.util.*;
  * @Author chen.yiran
  * @Date 17/3/7.
  */
+
 @Data
-public class Container extends PrimaryModel implements Serializable {
+public class Container implements Serializable {
 
     private static final long serialVersionUID = -936142514251466806L;
 
-//    public static final String NAMESPACE = "/containers";
+    public static final String NAMESPACE = "/containers";
 
     private String id;
 
@@ -170,8 +170,4 @@ public class Container extends PrimaryModel implements Serializable {
     private List<String> extraHosts;
 
     private DockerBuild build;
-
-    public Container() {
-        namespace = "/containers";
-    }
 }

@@ -1,6 +1,5 @@
 package com.github.cheny1ran.model;
 
-import com.github.cheny1ran.model.common.PrimaryModel;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -17,9 +16,11 @@ import java.util.Map;
  */
 
 @Data
-public class Service extends PrimaryModel implements Serializable {
+public class Service implements Serializable {
 
     private static final long serialVersionUID = -3574406501506751735L;
+
+    public static final String NAMESPACE = "/services";
 
     private String id;
 
@@ -51,7 +52,7 @@ public class Service extends PrimaryModel implements Serializable {
 
     private String selectorLink;
 
-    private Stack stackId;
+    private String stackId;
 
     private boolean startOnCreate = true;
 
@@ -73,8 +74,8 @@ public class Service extends PrimaryModel implements Serializable {
 
     private ServiceUpgrade upgrade;
 
-    public Service() {
-        namespace = "/services";
-    }
+    private String transitioning;
+
+    private String state;
 
 }

@@ -28,10 +28,4 @@ public class ProjectService {
             throw new RancherAPIException("project id can't be null, please call the init method firse");
         }
     }
-
-    public void activate(String id) {
-        String urlTail = NAMESPACE + SEP + id + "?action=activate";
-//        RancherAPI.INSTANCE.connect().request(urlTail, Project.class, null, RequestMethod.POST);
-    }
-
 }

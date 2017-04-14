@@ -1,4 +1,4 @@
-package com.github.cheny1ran.http;
+package com.github.cheny1ran.constant;
 
 /**
  * 功能描述:

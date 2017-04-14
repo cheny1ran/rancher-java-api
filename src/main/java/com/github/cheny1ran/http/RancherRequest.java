@@ -3,6 +3,7 @@ package com.github.cheny1ran.http;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.cheny1ran.RancherAPI;
+import com.github.cheny1ran.constant.RequestMethod;
 import org.apache.commons.io.IOUtils;
 import org.apache.log4j.Logger;
 

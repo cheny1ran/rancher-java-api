@@ -1,6 +1,8 @@
 package com.github.cheny1ran.http;
 
-import com.sun.xml.internal.messaging.saaj.util.Base64;
+import com.github.cheny1ran.RancherAPI;
+import com.github.cheny1ran.constant.RancherDataType;
+import com.github.cheny1ran.http.websocketImpl.DefaultRancherWebSocket;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
 import org.eclipse.jetty.websocket.client.WebSocketClient;
@@ -12,63 +14,46 @@ import java.util.concurrent.TimeUnit;
 /**
  * 功能描述:
  *
+ * websocket entry
+ *
  * @Author chen.yiran
  * @Date 17/3/13.
  */
+
+@SuppressWarnings("unused")
 public class WebSocketComponent {
 
-    private final String accessKey;
+    private final RancherAPI API;
 
-    private final String secretKey;
+    private final RancherWebSocket webSocket;
 
     private String wsUrl;
 
-    private volatile boolean stop;
-
-    private final static String DEFAULT_EVENT = "resource.change";
-
-    public void stop() {
-        this.stop = true;
-    }
-
-    public WebSocketComponent(String accessKey, String secretKey) {
-        this.accessKey = accessKey;
-        this.secretKey = secretKey;
-        this.stop = false;
+    public WebSocketComponent(RancherAPI api, RancherWebSocket webSocket, String eventName) {
+        this.API = api;
+        this.webSocket = webSocket;
         this.wsUrl = "ws://%s/v2-beta/projects/%s/subscribe?eventNames=%s";
+        wsUrl = String.format(wsUrl, api.getUrl(), api.getProjectId(), eventName);
     }
 
-    public void init(String url, String projectId, String eventNames) {
-        wsUrl = String.format(wsUrl, url, projectId, eventNames);
+    public WebSocketComponent(RancherAPI api, RancherWebSocket webSocket) {
+        this(api, webSocket, RancherDataType.RESOURCE_CHANGE_EVENT);
     }
 
-    public void init(String url, String projectId) {
-        // TODO: 17/3/14 数据校验
-        wsUrl = String.format(wsUrl, url, projectId, DEFAULT_EVENT);
+    public WebSocketComponent(RancherAPI api) {
+        this(api, new DefaultRancherWebSocket());
     }
 
-    public void listen() throws Exception {
-        listen(null);
-    }
-
-    public void listen(String containerId) throws Exception {
+    public void listen(int duration) throws Exception {
         WebSocketClient client = new WebSocketClient();
-        RancherWebSocket socket = new DefaultRancherWebSocket(containerId);
 
         URI uri = new URI(wsUrl);
         client.start();
         ClientUpgradeRequest request = new ClientUpgradeRequest();
-        request.setHeader("Authorization", generateAuth());
-        Future<Session> session = client.connect(socket, uri, request);
-        System.out.println("connect to " + wsUrl);
+        request.setHeader("Authorization", API.getAuthorization());
+        Future<Session> session = client.connect(webSocket, uri, request);
+        System.out.println("Trying to connect to " + wsUrl);
 
-        socket.awaitClose(600, TimeUnit.SECONDS);
-    }
-
-
-    public String generateAuth() {
-        String userpass = accessKey + ":" + secretKey;
-        String authorization = "Basic " + new String(new Base64().encode(userpass.getBytes())).trim();
-        return authorization;
+        webSocket.awaitClose(duration, TimeUnit.SECONDS);
     }
 }

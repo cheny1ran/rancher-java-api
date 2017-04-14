@@ -1,6 +1,5 @@
 package com.github.cheny1ran.model;
 
-import com.github.cheny1ran.model.common.PrimaryModel;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -18,9 +17,11 @@ import java.util.Map;
  */
 
 @Data
-public class Stack extends PrimaryModel implements Serializable {
+public class Stack implements Serializable {
 
     private static final long serialVersionUID = 6564604078554575265L;
+
+    public static final String NAMESPACE = "/stacks";
 
     private String id;
 
@@ -55,8 +56,8 @@ public class Stack extends PrimaryModel implements Serializable {
 
     private boolean system = false;
 
-    public Stack() {
-        namespace = "/stacks";
-    }
+    private String state;
+
+    private String transitioning;
 
 }

@@ -31,6 +31,10 @@ public abstract class RancherWebSocket {
         this.closeLatch = new CountDownLatch(1);
     }
 
+    public RancherWebSocket(CountDownLatch closeLatch) {
+        this.closeLatch = closeLatch;
+    }
+
     public boolean awaitClose(int duration, TimeUnit unit) throws InterruptedException {
         return this.closeLatch.await(duration, unit);
     }
