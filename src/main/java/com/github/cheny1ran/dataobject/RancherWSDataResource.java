@@ -2,7 +2,6 @@ package com.github.cheny1ran.dataobject;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 /**
  * 功能描述:
@@ -10,54 +9,36 @@ import java.util.List;
  * @Author chen.yiran
  * @Date 17/3/14.
  */
-public class RancherWSDataResource implements Serializable {
+public class RancherWSDataResource implements Serializable{
 
     private static final long serialVersionUID = 6753917958879344320L;
     /**
      * container
      */
-    private String id;
+    protected String id;
 
     /**
      * container
      */
-    private String type;
+    protected String type;
 
     /**
      * 容器名
      */
-    private String name;
+    protected String name;
 
-    private String state;
+    protected String state;
 
     /**
      * 实际值是environment id
      */
-    private String accountId;
+    protected String accountId;
 
-    private Date created;
+    protected Date created;
 
-    /**
-     * 主机host id
-     */
-    private String hostId;
+    protected String uuid;
 
-    /**
-     * base image uuid
-     */
-    private String imageUuid;
-
-    /**
-     * 和type区别?
-     */
-    private String kind;
-
-    /**
-     * 开放端口
-     */
-    private List<String> ports;
-
-    private String uuid;
+    protected String healthState;
 
     public String getId() {
         return id;
@@ -107,38 +88,6 @@ public class RancherWSDataResource implements Serializable {
         this.created = created;
     }
 
-    public String getHostId() {
-        return hostId;
-    }
-
-    public void setHostId(String hostId) {
-        this.hostId = hostId;
-    }
-
-    public String getImageUuid() {
-        return imageUuid;
-    }
-
-    public void setImageUuid(String imageUuid) {
-        this.imageUuid = imageUuid;
-    }
-
-    public String getKind() {
-        return kind;
-    }
-
-    public void setKind(String kind) {
-        this.kind = kind;
-    }
-
-    public List<String> getPorts() {
-        return ports;
-    }
-
-    public void setPorts(List<String> ports) {
-        this.ports = ports;
-    }
-
     public String getUuid() {
         return uuid;
     }
@@ -147,6 +96,13 @@ public class RancherWSDataResource implements Serializable {
         this.uuid = uuid;
     }
 
+    public String getHealthState() {
+        return healthState;
+    }
+
+    public void setHealthState(String healthState) {
+        this.healthState = healthState;
+    }
 
     @Override
     public String toString() {
@@ -157,11 +113,8 @@ public class RancherWSDataResource implements Serializable {
         sb.append(", state='").append(state).append('\'');
         sb.append(", accountId='").append(accountId).append('\'');
         sb.append(", created=").append(created);
-        sb.append(", hostId='").append(hostId).append('\'');
-        sb.append(", imageUuid='").append(imageUuid).append('\'');
-        sb.append(", kind='").append(kind).append('\'');
-        sb.append(", ports=").append(ports);
         sb.append(", uuid='").append(uuid).append('\'');
+        sb.append(", healthState='").append(healthState).append('\'');
         sb.append('}');
         return sb.toString();
     }

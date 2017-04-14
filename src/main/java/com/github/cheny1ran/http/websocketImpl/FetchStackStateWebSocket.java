@@ -4,8 +4,8 @@ import com.alibaba.fastjson.JSON;
 import com.github.cheny1ran.constant.RancherDataType;
 import com.github.cheny1ran.dataobject.RancherWSObject;
 import com.github.cheny1ran.http.RancherWebSocket;
-import com.github.cheny1ran.model.Service;
-import com.github.cheny1ran.model.Stack;
+import com.github.cheny1ran.model.websocket.ServiceDataResource;
+import com.github.cheny1ran.model.websocket.StackDataResource;
 import org.apache.log4j.Logger;
 import org.eclipse.jetty.websocket.api.annotations.WebSocket;
 
@@ -29,10 +29,25 @@ public class FetchStackStateWebSocket extends RancherWebSocket {
         this.stackId = stackId;
     }
 
+    public FetchStackStateWebSocket(String stackId, boolean isCreate) {
+        this.stackId = stackId;
+        this.create = isCreate;
+    }
+
     /**
-     * 返回部署结果是成功还是失败
+     * stack deploy result
      */
     private boolean result = false;
+
+    private boolean create = true;
+
+    public void updateMode() {
+        this.create = false;
+    }
+
+    public void createMode() {
+        this.create = true;
+    }
 
     @Override
     public void onMessage(String msg) {
@@ -42,44 +57,31 @@ public class FetchStackStateWebSocket extends RancherWebSocket {
         String dataStr = wsObject.getData().get(RancherDataType.RESOURCE).toString();
 
         if (stackId == null) {
-            log.error("未设置监听的 stackId !结束监听.");
+            log.error("StackId is null! End listening.");
             this.session.close();
         }
-
-        boolean flag = false;
-
         if (wsObject.getName().equals(RancherDataType.RESOURCE_CHANGE_EVENT)) {
-            if (!flag && wsObject.getResourceType().equals(RancherDataType.STACK)) {
-                // stack创建成功但服务未启动
-                Stack stackDataResource = JSON.parseObject(dataStr, Stack.class);
-                if (stackDataResource.getState().equals(RancherDataType.ACTIVE) &&
-                        stackDataResource.getHealthState().equals(RancherDataType.HEALTHY) &&
-                        stackDataResource.getTransitioning().equals(RancherDataType.TRANSITIONING_NO)) {
 
-                    log.info("Stack id = " + stackId + " 创建成功");
-                    flag = true;
-                }
-
-            }
-            // stack状态在service未完全好前就会设置成成功
-            // 若 service transitioning 已经 error 则快速失败
-            if (wsObject.getResourceType().equals(RancherDataType.SERVICE)) {
-                Service serviceDataResource = JSON.parseObject(dataStr, Service.class);
-
-                if (serviceDataResource.getStackId().equals(stackId)) {
-                    if (serviceDataResource.getTransitioning().equals(RancherDataType.TRANSITIONING_ERROR)) {
+            if (create) {
+                if (wsObject.getResourceType().equals(RancherDataType.STACK)) {
+                    if (stackCreated(dataStr)) {
+                        log.info("Stack id = " + stackId + " created!");
+                        result = true;
                         this.session.close();
                     }
                 }
+            } else {
+                if (wsObject.getResourceType().equals(RancherDataType.SERVICE)) {
 
-                if (serviceDataResource.getState().equals(RancherDataType.UPGRADED) &&
-                        serviceDataResource.getHealthState().equals(RancherDataType.HEALTHY) &&
-                        serviceDataResource.getTransitioning().equals(RancherDataType.TRANSITIONING_NO) &&
-                        serviceDataResource.getStackId().equals(stackId)) {
+                    if (serviceError(dataStr)) {
+                        this.session.close();
+                    }
 
-                    log.info("Got stack " + stackId + " service deployed " + serviceDataResource.getId());
-                    result = true;
-                    this.session.close();
+                    if (serviceUpgraded(dataStr)) {
+                        log.info("Got stack " + stackId + " service deployed ");
+                        result = true;
+                        this.session.close();
+                    }
                 }
             }
         }
@@ -87,5 +89,28 @@ public class FetchStackStateWebSocket extends RancherWebSocket {
 
     public boolean getResult() {
         return result;
+    }
+
+    private boolean stackCreated(String dataStr) {
+        StackDataResource stackDataResource = JSON.parseObject(dataStr, StackDataResource.class);
+        return stackDataResource.getState().equals(RancherDataType.ACTIVE) &&
+                stackDataResource.getHealthState().equals(RancherDataType.HEALTHY) &&
+                stackDataResource.getTransitioning().equals(RancherDataType.TRANSITIONING_NO);
+
+
+    }
+
+    private boolean serviceError(String dataStr) {
+        ServiceDataResource serviceDataResource = JSON.parseObject(dataStr, ServiceDataResource.class);
+        return serviceDataResource.getStackId().equals(stackId) &&
+                serviceDataResource.getTransitioning().equals(RancherDataType.TRANSITIONING_ERROR);
+    }
+
+    private boolean serviceUpgraded(String dataStr) {
+        ServiceDataResource serviceDataResource = JSON.parseObject(dataStr, ServiceDataResource.class);
+        return serviceDataResource.getState().equals(RancherDataType.UPGRADED) &&
+                serviceDataResource.getHealthState().equals(RancherDataType.HEALTHY) &&
+                serviceDataResource.getTransitioning().equals(RancherDataType.TRANSITIONING_NO) &&
+                serviceDataResource.getStackId().equals(stackId);
     }
 }
